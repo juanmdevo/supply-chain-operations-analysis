@@ -1,0 +1,270 @@
+import pandas as pd
+
+# Load the CSV file
+df = pd.read_csv("DataCoSupplyChainDataset.csv", encoding="latin1")
+
+# Show the first 5 rows
+print(df.head())
+
+# Show all columns
+print(df.columns)
+
+# Check the shape of the dataset
+print(df.shape)
+
+# Basic info
+print(df.info())
+
+# Check for missing values
+print(df.isnull().sum())
+
+# Check for duplicates
+print(df.duplicated().sum())
+
+------------------------------------------------------------------------
+columns_to_keep = [
+    'Type',
+    'Days for shipping (real)',
+    'Days for shipment (scheduled)',
+    'Benefit per order',
+    'Sales per customer',
+    'Delivery Status',
+    'Late_delivery_risk',
+    'Category Name',
+    'Customer Segment',
+    'Customer State',
+    'Market',
+    'Order City',
+    'Order Country',
+    'order date (DateOrders)',
+    'Order Item Discount',
+    'Order Item Discount Rate',
+    'Order Item Product Price',
+    'Order Item Profit Ratio',
+    'Order Item Quantity',
+    'Sales',
+    'Order Item Total',
+    'Order Profit Per Order',
+    'Order Region',
+    'Order State',
+    'Order Status',
+    'Product Name',
+    'Product Price',
+    'shipping date (DateOrders)',
+    'Shipping Mode'
+]
+
+df_clean = df[columns_to_keep].copy()
+
+# Delivery delay in days
+df_clean['Delivery Delay'] = (
+    df_clean['Days for shipping (real)'] -
+    df_clean['Days for shipment (scheduled)']
+)
+
+# On-time flag
+df_clean['On Time Delivery'] = df_clean['Delivery Delay'].apply(
+    lambda x: 'On Time' if x <= 0 else 'Late'
+)
+
+# Profit Margin %
+df_clean['Profit Margin %'] = (
+    df_clean['Order Profit Per Order'] / df_clean['Sales']
+) * 100
+
+# Convert order/shipping dates to datetime
+df_clean['order date (DateOrders)'] = pd.to_datetime(
+    df_clean['order date (DateOrders)']
+)
+
+df_clean['shipping date (DateOrders)'] = pd.to_datetime(
+    df_clean['shipping date (DateOrders)']
+)
+
+print(df_clean.head())
+print(df_clean.shape)
+print(df_clean.isnull().sum())
+
+----------------------------------------------------------------------------------------------------
+
+# Create date features from order date
+df_clean['Order Year'] = df_clean['order date (DateOrders)'].dt.year
+df_clean['Order Month'] = df_clean['order date (DateOrders)'].dt.month
+df_clean['Order Month Name'] = df_clean['order date (DateOrders)'].dt.month_name()
+df_clean['Order Day'] = df_clean['order date (DateOrders)'].dt.day
+df_clean['Order Weekday'] = df_clean['order date (DateOrders)'].dt.day_name()
+
+# Optional: shipping date features too
+df_clean['Shipping Year'] = df_clean['shipping date (DateOrders)'].dt.year
+df_clean['Shipping Month'] = df_clean['shipping date (DateOrders)'].dt.month
+df_clean['Shipping Month Name'] = df_clean['shipping date (DateOrders)'].dt.month_name()
+df_clean['Shipping Day'] = df_clean['shipping date (DateOrders)'].dt.day
+df_clean['Shipping Weekday'] = df_clean['shipping date (DateOrders)'].dt.day_name()
+
+print(df_clean.head())
+print(df_clean.shape)
+
+df_clean.to_csv("DataCoSupplyChain_Cleaned.csv", index=False)
+
+-------------------------------------------------------------------------------------------------------
+
+# Overall on-time delivery %
+print(df_clean['On Time Delivery'].value_counts(normalize=True) * 100)
+
+# Average delivery delay
+print(df_clean['Delivery Delay'].mean())
+
+# Shipping mode performance
+print(
+    df_clean.groupby('Shipping Mode')['Delivery Delay']
+    .mean()
+    .sort_values()
+)
+
+# Shipping mode on-time %
+print(
+    df_clean.groupby('Shipping Mode')['On Time Delivery']
+    .value_counts(normalize=True)
+    .mul(100)
+)
+
+# Region delays
+print(
+    df_clean.groupby('Order Region')['Delivery Delay']
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+# State delays
+print(
+    df_clean.groupby('Order State')['Delivery Delay']
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+# Profit by shipping mode
+print(
+    df_clean.groupby('Shipping Mode')['Order Profit Per Order']
+    .mean()
+    .sort_values(ascending=False)
+)
+
+# Sales by region
+print(
+    df_clean.groupby('Order Region')['Sales']
+    .sum()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+--------------------------------------------------------------------------------------------
+
+import matplotlib.pyplot as plt
+
+shipping_delay = (
+    df_clean.groupby('Shipping Mode')['Delivery Delay']
+    .mean()
+    .sort_values()
+)
+
+plt.figure(figsize=(8,5))
+shipping_delay.plot(kind='bar')
+plt.title('Average Delivery Delay by Shipping Mode')
+plt.xlabel('Shipping Mode')
+plt.ylabel('Average Delay (Days)')
+plt.show()
+
+--------------------------------------------------------------------------------------------
+
+# On-time delivery percentage by shipping mode
+on_time_shipping = (
+    df_clean.groupby('Shipping Mode')['On Time Delivery']
+    .value_counts(normalize=True)
+    .mul(100)
+    .rename('Percentage')
+)
+
+print(on_time_shipping)
+
+# Top 10 regions with the worst delays
+worst_regions = (
+    df_clean.groupby('Order Region')['Delivery Delay']
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+print(worst_regions)
+
+# Top 10 states with the worst delays
+worst_states = (
+    df_clean.groupby('Order State')['Delivery Delay']
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+print(worst_states)
+
+---------------------------------------------------------------------------------------------
+
+# Average profit per order by shipping mode
+profit_shipping = (
+    df_clean.groupby('Shipping Mode')['Order Profit Per Order']
+    .mean()
+    .sort_values(ascending=False)
+)
+
+print(profit_shipping)
+
+# Sales by region
+sales_region = (
+    df_clean.groupby('Order Region')['Sales']
+    .sum()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+print(sales_region)
+
+# Profit by region
+profit_region = (
+    df_clean.groupby('Order Region')['Order Profit Per Order']
+    .mean()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+print(profit_region)
+
+# Most used shipping modes
+shipping_counts = df_clean['Shipping Mode'].value_counts()
+
+print(shipping_counts)
+
+---------------------------------------------------------------------------------------
+# Sales by region chart
+sales_region.plot(kind='bar', figsize=(10,6))
+plt.title('Top 10 Regions by Sales')
+plt.xlabel('Region')
+plt.ylabel('Total Sales')
+plt.xticks(rotation=45)
+plt.show()
+
+# Profit by shipping mode chart
+profit_shipping.plot(kind='bar', figsize=(8,5))
+plt.title('Average Profit per Order by Shipping Mode')
+plt.xlabel('Shipping Mode')
+plt.ylabel('Average Profit')
+plt.xticks(rotation=45)
+plt.show()
+
+# Worst delay regions chart
+worst_regions.plot(kind='bar', figsize=(10,6))
+plt.title('Regions with Highest Delivery Delays')
+plt.xlabel('Region')
+plt.ylabel('Average Delay (Days)')
+plt.xticks(rotation=45)
+plt.show()
