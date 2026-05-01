@@ -20,16 +20,16 @@ The analysis combines Python for data cleaning and exploratory analysis with Pow
 ## Dashboard Pages
 
 ### 1. Executive Overview
-![Executive Overview](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/Executive%20Overview.png)
+![Executive Overview](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/dashboard/Executive%20Overview.png)
 
 ### 2. Regional Analysis
-![Regional Analysis](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/Regional%20Analysis.png)
+![Regional Analysis](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/dashboard/Regional%20Analysis.png)
 
 ### 3. Shipping Performance
-![Shipping Performance](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/Shipping%20Performance.png)
+![Shipping Performance](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/dashboard/Shipping%20Performance.png)
 
 ### 4. Strategic Recommendations
-![Stategic Recommendations](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/Recommendations-Summary.png)
+![Strategic Recommendations](https://github.com/juanmdevo/supply-chain-operations-analysis/blob/main/dashboard/Recommendations-Summary.png)
 
 ## Key Insights
 
